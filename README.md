@@ -1,90 +1,106 @@
-# Assignment 1 — Divide & Conquer Algorithms
+# Assignment 1 — Algorithmic Analysis
 
-## Implemented Algorithms
-We implemented four algorithms using the Divide & Conquer paradigm:
-- **MergeSort**: recursive merge sort with a reusable buffer and cutoff to InsertionSort for small subarrays.
-- **QuickSort**: randomized pivot, smaller-first recursion to reduce stack depth.
-- **Deterministic Select (Median of Medians)**: finds the k-th element in linear time using MoM5 pivoting.
-- **Closest Pair of Points (2D)**: divide-and-conquer with x-sorting and limited strip check.
+## 📌 Introduction
+This project was made for **Assignment 1** of the *Design and Analysis of Algorithms* course.  
+The goal was to implement four algorithms in Java, analyze their complexity, run experiments, and compare the results with theory.
 
----
-
-## Architecture Notes
-To measure recursion depth and allocations, lightweight counters were added:
-- `depth` counter: incremented on recursive calls and tracked the maximum depth.
-- `comparisons` counter: recorded the number of key comparisons.
-- Temporary allocations in MergeSort were minimized by reusing a single buffer.
-- QuickSort always recursed on the smaller partition to reduce stack usage.
-
-Counters were reset before each run and emitted together with timing data into the CSV file (`results.csv`).
+Algorithms included:
+- **MergeSort**
+- **QuickSort**
+- **Deterministic Select (Median of Medians)**
+- **Closest Pair of Points**
 
 ---
 
-## Recurrence Analysis
+## 📂 Architecture Notes
+- **MergeSort** → recursive, single buffer, cutoff to InsertionSort for small subarrays.
+- **QuickSort** → randomized pivot, tail recursion elimination (saves stack).
+- **Deterministic Select** → Median of Medians guarantees linear time.
+- **Closest Pair** → divide-and-conquer with strip optimization.
+
+### Depth & Memory
+- **MergeSort**: depth `O(log n)`, buffer allocated once.
+- **QuickSort**: expected depth `O(log n)`, randomized pivot avoids worst-case.
+- **Deterministic Select**: recursion shrinks ≥30% each step → depth `O(log n)`.
+- **Closest Pair**: depth `O(log n)`, auxiliary arrays reused.
+
+---
+
+## 📊 Recurrence Analysis
 
 - **MergeSort**  
-  T(n) = 2T(n/2) + Θ(n). Each level splits in half and merges in linear time.  
-  By the Master Theorem (Case 2), the solution is Θ(n log n).  
-  Depth = O(log n).
+  `T(n) = 2T(n/2) + Θ(n)`  
+  Solution (Master Theorem): `Θ(n log n)`
 
-- **QuickSort (average case)**  
-  T(n) = T(k) + T(n−k−1) + Θ(n), with expected balanced split.  
-  Solves to Θ(n log n) on average.  
-  Depth is logarithmic on average; in worst case O(n).
+- **QuickSort** (average)  
+  `T(n) = T(αn) + T((1-α)n) + Θ(n)`  
+  Expected: `Θ(n log n)`  
+  Worst-case: `O(n²)` (rare due to random pivot).
 
-- **Deterministic Select (Median of Medians)**  
-  T(n) = T(n/5) + T(7n/10) + Θ(n).  
-  By Akra–Bazzi theorem, T(n) = Θ(n).  
-  Guarantees linear time, though constants are high.
+- **Deterministic Select (MoM5)**  
+  `T(n) ≤ T(n/5) + T(7n/10) + Θ(n)`  
+  Solution (Akra–Bazzi): `Θ(n)`
 
 - **Closest Pair of Points**  
-  T(n) = 2T(n/2) + Θ(n).  
-  Each step splits points by x-coordinate, recursively solves halves, and merges with O(n) strip check.  
-  Master Theorem (Case 2) → Θ(n log n).
+  `T(n) = 2T(n/2) + Θ(n)`  
+  Solution (Master Theorem): `Θ(n log n)`
 
 ---
 
-## Experimental Results
+## 📈 Experimental Results
 
-We benchmarked the algorithms on random inputs of size n = 1000, 2000, 5000, 10000, 20000.  
-Results (in milliseconds):
+We benchmarked algorithms up to `n = 20,000` (see `results.csv`).
 
-| n    | MergeSort | QuickSort | DeterministicSelect | ClosestPair |
-|------|-----------|-----------|----------------------|-------------|
-| 1000 | 0         | 1         | 2                    | 12          |
-| 2000 | 1         | 1         | 2                    | 3           |
-| 5000 | 0         | 0         | 1                    | 6           |
-| 10000| 1         | 1         | 2                    | 7           |
-| 20000| 3         | 2         | 4                    | 60          |
+### Runtime
+![Time Plot](time_plot.png)
 
+- MergeSort and QuickSort follow `n log n`.
+- Deterministic Select grows linearly but with larger constants.
+- Closest Pair is slower on small arrays due to overhead.
 
+### Recursion Depth
+![Depth Plot](depth_plot.png)
 
----
-
-## Plots
-
-- **Time vs n**  
-  ![Time vs n](time_vs_n.png)
-
-- **Depth vs n**  
-  In MergeSort and ClosestPair, recursion depth grows as log₂n.  
-  QuickSort (with smaller-first recursion) also shows near-logarithmic depth.  
-  Deterministic Select is linear recursion but bounded by MoM5.
+- Depth grows around `log₂(n)`.
+- For `n = 20,000`, depth ≈ 15.
+- Matches the theory for all algorithms.
 
 ---
 
-## Constant-factor Effects
-Theoretical and measured growth match, but practical performance is affected by constants:
-- QuickSort benefits from cache locality and is often faster than MergeSort.
-- JVM overhead and garbage collection affect small inputs.
-- Memory allocations add noise to execution time.
+## 📋 Comparison Table
+
+| Algorithm              | Average Time | Worst Case | Memory   | Depth    |
+|------------------------|--------------|------------|----------|----------|
+| MergeSort              | Θ(n log n)   | Θ(n log n) | O(n)     | O(log n) |
+| QuickSort              | Θ(n log n)   | O(n²)      | O(log n) | O(log n) |
+| Deterministic Select   | Θ(n)         | Θ(n)       | O(1)     | O(log n) |
+| Closest Pair of Points | Θ(n log n)   | Θ(n log n) | O(n)     | O(log n) |
 
 ---
 
-## Summary
-The experiments confirm theoretical results:
-- MergeSort and QuickSort scale as Θ(n log n); QuickSort is faster in practice.
-- Deterministic Select achieves Θ(n), but overhead makes it slower for small n.
-- Closest Pair scales as Θ(n log n), clearly outperforming naive O(n²).
+## ✅ Testing
 
-Measured data aligns with recurrence relations, with only constant-factor mismatches due to architecture-level effects (cache, allocations, GC).
+Unit tests were written with **JUnit 5**.
+
+- Sorting algorithms tested on random, sorted, and empty arrays.
+- QuickSort recursion depth ≤ about `2*log₂(n)`.
+- Deterministic Select compared with `Arrays.sort()[k]`.
+- Closest Pair validated against brute-force for small `n (≤ 2000)`.
+
+Example:
+```java
+@Test
+void testMergeSortBasic() {
+    int[] arr = {5, 3, 8, 1, 2};
+    int[] expected = {1, 2, 3, 5, 8};
+    MergeSort.sort(arr);
+    assertArrayEquals(expected, arr);
+}
+```
+## 🎯 Summary
+- **MergeSort** is stable and predictable (`Θ(n log n)`).
+- **QuickSort** is usually fastest, thanks to cache, but has a rare `O(n²)` case.
+- **Deterministic Select** is linear in theory, but constants make it slower in practice.
+- **Closest Pair** works well for large `n`, but overhead is high for small inputs.
+
+✅ Theoretical analysis matches experimental data, with only small constant-factor differences.
